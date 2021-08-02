@@ -2,9 +2,11 @@
 #include "sensor_msgs/LaserScan.h"
 #include <vector>
 #include <iostream>
-
+#include "std_msgs/String.h"
 #define RAD2DEG(x) ((x)*180./M_PI)
+#include <sstream>
 
+float g_optimal;
 std::vector<float> distances;
 std::vector< std::vector <float> > tmp;
 int g_num;
@@ -14,7 +16,7 @@ float find_optimal_degree(const std::vector<float> distances);
 float scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
     int count = scan->scan_time / scan->time_increment;
-	g_count = count;
+	g_count = count / 2;
     int a = 0;
     int b = 0;
     printf("[YDLIDAR INFO]: I heard a laser scan %s[%d]:\n", scan->header.frame_id.c_str(), count);
@@ -23,13 +25,13 @@ float scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	distances.clear();
 
 
-    for(int i = 0; i < count; i++) 
+    for(int i = 0; i < count / 2; i++) 
 	{
       float degree = RAD2DEG(scan->angle_min + scan->angle_increment * i);
        
    
           //printf("[LDS INFO]: angle-distance : [%f, %f, %i]\n", degree, scan->ranges[i], i);
-      if (scan->ranges[i] > 1 ) 
+      if (scan->ranges[i] > 0.1 ) 
 	  {
 						distances.push_back(1);
 //                        printf("angle-distance : [%f, %d]\n",distances[i], a );
@@ -82,14 +84,6 @@ std::vector <std::vector <float> > make_second_array(const std::vector<float> di
       }
 	}
 	tmp = array;
-	for (int j = 0; j < g_num ; j++)
-	{
-		for (int i = 0; i < array[j].size() ; i++)
-		{
-		//dozzy	std::cout << "array[j][i] = " << array[j][i] << std::endl;
-		}
-	}
-   // dozzy	std::cout << "clear is done\n" << std::endl;
 	array.clear();
 	
 	return tmp;
@@ -113,28 +107,46 @@ float select_angle(std::vector< std::vector<float> > array)
       }
                // 최대값과 비교해 더 크면 최대값에 저장
    }
-   printf("num=%f max=%f",num,max);
+   printf("num=%f max=%f\n",num,max);
    return (num - max / 2);
 }
-
 
 float find_optimal_degree(const std::vector<float> distances)
 {
 
-   float optimal;
+	float optimal;
 
    optimal = select_angle(make_second_array(distances));
    optimal = optimal / g_count * 360;
    tmp.clear();
    printf("optimal: %f\n",  optimal);
+  // msg = std::to_string(optimal);
+   g_optimal = optimal;
    return (optimal);
 }
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "ydlidar_client");
+    ros::init(argc, argv, "seven");
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe<sensor_msgs::LaserScan>("/scan", 1000, scanCallback);
-    ros::spin();
+	ros::Publisher angle_pub = n.advertise<std_msgs::String>("rotate_angle", 1000);
+	ros::Rate loop_rate(10);
+	while (ros::ok())
+	{
+		std_msgs::String msg;
+
+		std::stringstream ss;
+		ss << g_optimal  ;
+		msg.data = ss.str();
+
+		ROS_INFO("%s", msg.data.c_str());
+
+		angle_pub.publish(msg);
+
+		ros::spinOnce();
+
+		loop_rate.sleep();
+	}
     return 0;
 }

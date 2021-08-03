@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include "std_msgs/String.h"
+#include "std_msgs/Float64.h"
 #define RAD2DEG(x) ((x)*180./M_PI)
 #include <sstream>
 
@@ -130,17 +131,19 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "seven");
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe<sensor_msgs::LaserScan>("/scan", 1000, scanCallback);
-	ros::Publisher angle_pub = n.advertise<std_msgs::String>("rotate_angle", 1000);
+	ros::Publisher angle_pub = n.advertise<std_msgs::Float64>("rotate_angle", 1000);
 	ros::Rate loop_rate(10);
 	while (ros::ok())
 	{
-		std_msgs::String msg;
+		std_msgs::Float64 msg;
 
-		std::stringstream ss;
-		ss << g_optimal  ;
-		msg.data = ss.str();
+                float g_o;
+                g_o = g_optimal;
+		//std::stringstream ss;
+		//ss << g_optimal  ;
+		msg.data = g_o;
 
-		ROS_INFO("%s", msg.data.c_str());
+		ROS_INFO("%f", msg.data);
 
 		angle_pub.publish(msg);
 

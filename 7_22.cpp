@@ -17,7 +17,7 @@ float find_optimal_degree(const std::vector<float> distances);
 float scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
     int count = scan->scan_time / scan->time_increment;
-	g_count = count / 2;
+	g_count = count ;
     int a = 0;
     int b = 0;
     printf("[YDLIDAR INFO]: I heard a laser scan %s[%d]:\n", scan->header.frame_id.c_str(), count);
@@ -26,13 +26,33 @@ float scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	distances.clear();
 
 
-    for(int i = 0; i < count / 2; i++) 
+    for(int i = 0; i < count / 4 ; i++) 
 	{
       float degree = RAD2DEG(scan->angle_min + scan->angle_increment * i);
        
    
           //printf("[LDS INFO]: angle-distance : [%f, %f, %i]\n", degree, scan->ranges[i], i);
-      if (scan->ranges[i] > 0.1 ) 
+      if (scan->ranges[i] > 2) 
+	  {
+						distances.push_back(1);
+//                        printf("angle-distance : [%f, %d]\n",distances[i], a );
+                        a++;
+	  }                                  
+      else 
+	  {
+						distances.push_back(0);
+  //                      printf("angle-distance_n : [%f, %d]\n",distances[i], b );
+                        b++;
+      }
+   
+    }
+	for(int i = count / 4 * 3; i < count ; i++) 
+	{
+      float degree = RAD2DEG(scan->angle_min + scan->angle_increment * i);
+       
+   
+          //printf("[LDS INFO]: angle-distance : [%f, %f, %i]\n", degree, scan->ranges[i], i);
+      if (scan->ranges[i] > 2) 
 	  {
 						distances.push_back(1);
 //                        printf("angle-distance : [%f, %d]\n",distances[i], a );
@@ -122,7 +142,10 @@ float find_optimal_degree(const std::vector<float> distances)
    tmp.clear();
    printf("optimal: %f\n",  optimal);
   // msg = std::to_string(optimal);
+	
    g_optimal = optimal;
+   
+	
    return (optimal);
 }
 
@@ -132,13 +155,13 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe<sensor_msgs::LaserScan>("/scan", 1000, scanCallback);
 	ros::Publisher angle_pub = n.advertise<std_msgs::Float64>("rotate_angle", 1000);
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(1);
 	while (ros::ok())
 	{
 		std_msgs::Float64 msg;
 
-                float g_o;
-                g_o = g_optimal;
+        float g_o;
+        g_o = g_optimal;
 		//std::stringstream ss;
 		//ss << g_optimal  ;
 		msg.data = g_o;

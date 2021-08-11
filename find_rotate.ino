@@ -115,45 +115,42 @@ void loop()
    heading = heading * 180/M_PI;
   
  
-    if (rotate_angle > 0 && rotate_angle < 40) //first_Case
+    if (rotate_angle > 0 && rotate_angle < 30) //first_Case
     {
-      left.writeMicroseconds(1600); //
-      right.writeMicroseconds(1600); //
+      left.writeMicroseconds(1620); //
+      right.writeMicroseconds(1750); //
      // Serial.println("Go_straight");
     }
     
-    else if (rotate_angle > 40 && rotate_angle < 90) //second_case
+    else if (rotate_angle > 30 && rotate_angle < 60) //second_case
     {
-      left.writeMicroseconds(1650); //
-      right.writeMicroseconds(1550); //
+      left.writeMicroseconds(1550); //
+      right.writeMicroseconds(1600); //
     //  Serial.println("Turn Right1");
     }
   
-   // else if (rotate_angle > 60 && rotate_angle < 90)  //
-   // {
-    //  left.writeMicroseconds(1650); //yujin
-     // right.writeMicroseconds(1500); //yujin
-      //Serial.println("Turn left1");
-    //}
-      else if (rotate_angle > 270 && rotate_angle < 320)
+    else if (rotate_angle > 60 && rotate_angle < 90)  //
+    {
+     left.writeMicroseconds(1600); //yujin
+      right.writeMicroseconds(1600); //yujin
+    //  Serial.println("Turn left1");
+    }
+      else if (rotate_angle > 90 && rotate_angle < 120)
       {
-         left.writeMicroseconds(1550); //yujin
-        right.writeMicroseconds(1650); //yujin
+         left.writeMicroseconds(1600); //yujin
+        right.writeMicroseconds(1600); //yujin
       }
-      
-     else if (rotate_angle > 320 && rotate_angle < 360)
+     else if (rotate_angle > 120 && rotate_angle < 150)
     {
       left.writeMicroseconds(1600); //
       right.writeMicroseconds(1600); //
       Serial.println("Turn Right1");
-    } 
-     else  
+    }  
+     else if (rotate_angle > 150 && rotate_angle < 180)
     {
-      left.writeMicroseconds(1600); //
-      right.writeMicroseconds(1600); //
-    //  Serial.println("Turn Right1");
+      left.writeMicroseconds(1750); //
+      right.writeMicroseconds(1620); //
+    //  Serial.println("Turn Righ-+*t1");
     }
-
-
   delay(1000);
 }

@@ -1,4 +1,3 @@
-
 /*
   MLX90393 Magnetometer Example Code
   By: Nathan Seidle
@@ -16,8 +15,9 @@
 
 #include <ros.h> //yiseul
 #include <Wire.h>
-#include <std_msgs/Float64.h> //yiseul
+#include <std_msgs/Float32MultiArray.h> //yiseul
 #include <std_msgs/String.h>
+#include <std_msgs/Float64.h>
 #include <string.h>
 #include <MLX90393.h> //From https://github.com/tedyapo/arduino-MLX90393 by Theodore Yapo
 #include <Servo.h>
@@ -28,24 +28,25 @@ Servo left;
 MLX90393 mlx;
 MLX90393::txyz data; //Create a structure, called data, of four floats (t, x, y, and z)
 std_msgs::Float64 angle; //yiseul
-std_msgs::Float64 msg;
+std_msgs::Float32MultiArray cmd_msg;
 //ros::Publisher heading_angle("heading_angle", &angle); //yiseul
 ros::NodeHandle  nh;
 byte motor_left = 8;
 byte motor_right = 10;
 
 String str;
-float rotate_angle;
+float del_lati;///
+float del_longi;///
 
-
-void messageCb(const std_msgs::Float64& msg)
+void messageLati(const std_msgs::Float32MultiArray& cmd_msg)///
 {
- // Serial.println("msg.data");
-  rotate_angle = msg.data;
+  Serial.println("msg.data"); ///
+  del_lati = cmd_msg.data[0];///
+   del_longi = cmd_msg.data[1];
 }
 
-ros::Subscriber <std_msgs::Float64> sub("gps_xy", messageCb);
 
+ros::Subscriber <std_msgs::Float32MultiArray> sub("gps_xy", messageLati);///
 
 void setup()
 {
@@ -83,25 +84,26 @@ void setup()
 void loop()
 {
   String str;
-  
-  float h_angle; //yiseul
-  mlx.readData(data); //Read the values from the sensor
-  float x = float(data.x) + 30 ;
-  float y = float(data.y) + 35 ;
+
+  float way_x;
+  float way_y;
+  float difference = 1;
+  float x;
+  float y;
+ // float h_angle; //yiseul
+ // mlx.readData(data); //Read the values from the sensor
+ // float x = float(data.x) + 30 ;
+ // float y = float(data.y) + 35 ;
  // Serial.print("mag : \t ");
  // Serial.print(x); Serial.print("\t");
  // Serial.print(y);  Serial.print("\t");
-  float heading = atan2(y, x);
-  if(heading < 0)
-  heading += 2 * M_PI;
+ // float heading = atan2(y, x);
+  //if(heading < 0)
+ // heading += 2 * M_PI;
  // Serial.print("rotate_angle is: ");
-  delay(10);
+  //delay(10);
  // str = "rotate_angle is" + String(rotate_angle, HEX);
  // Serial.println(str);
-  delay(10);
-  Serial.print("heading:\t");
-  delay(10);
-  Serial.println(heading * 180/M_PI);
 
 //  h_angle = heading; //yiseul
 //  angle.data = h_angle; //yiseul
@@ -110,25 +112,33 @@ void loop()
   
    //yujin
   int receive = 0; //yujin
-  int signal = heading;
+//  int signal = heading;
 
  //  heading = heading * 180/M_PI;
   
  
-    if (rotate_angle > 0) //first_Case
+    if (del_longi > 0   && del_lati > 0) //first_Case
     {
       
-      left.writeMicroseconds(1600); //
+      left.writeMicroseconds(1550); //
       right.writeMicroseconds(1520); //
      // Serial.println("Go_straight");
+      
     }
-    
-    else  //second_case
+    else if(del_longi < 0 && del_lati > 0) //second_case
     {
       left.writeMicroseconds(1520); //
-      right.writeMicroseconds(1600); //
+      right.writeMicroseconds(1550); //
     //  Serial.println("Turn Right1");
+      
     }
-  
+     else if(del_lati < difference && del_longi < difference) //second_case
+    {
+      left.writeMicroseconds(1550); //
+      right.writeMicroseconds(1550); //
+    //  Serial.println("Turn Right1");
+     
+    }
+    
   delay(1000);
 }

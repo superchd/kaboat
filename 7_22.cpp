@@ -9,10 +9,13 @@
 
 float g_optimal;
 std::vector<float> distances;
+std::vector<float> real_distances;
 std::vector< std::vector <float> > tmp;
 int g_num;
 int g_count;
+float min;
 float find_optimal_degree(const std::vector<float> distances);
+
 
 float scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
@@ -20,50 +23,32 @@ float scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	g_count = count ;
     int a = 0;
     int b = 0;
+    min = 0;
     printf("[YDLIDAR INFO]: I heard a laser scan %s[%d]:\n", scan->header.frame_id.c_str(), count);
     printf("[YDLIDAR INFO]: angle_range : [%f, %f]\n", RAD2DEG(scan->angle_min), RAD2DEG(scan->angle_max));
     
 	distances.clear();
+	real_distances.clear();
 
-
-    for(int i = 0; i < count / 4 ; i++) 
+	for(int i = count / 2; i < count ; i++) 
 	{
       float degree = RAD2DEG(scan->angle_min + scan->angle_increment * i);
        
    
-          //printf("[LDS INFO]: angle-distance : [%f, %f, %i]\n", degree, scan->ranges[i], i);
       if (scan->ranges[i] > 2) 
 	  {
-						distances.push_back(1);
-//                        printf("angle-distance : [%f, %d]\n",distances[i], a );
-                        a++;
+		  distances.push_back(1);
 	  }                                  
       else 
-	  {
-						distances.push_back(0);
-  //                      printf("angle-distance_n : [%f, %d]\n",distances[i], b );
-                        b++;
+      {
+		  distances.push_back(0);
       }
-   
-    }
-	for(int i = count / 4 * 3; i < count ; i++) 
+      
+      if (scan -> ranges[i] > 0.12)
 	{
-      float degree = RAD2DEG(scan->angle_min + scan->angle_increment * i);
-       
-   
-          //printf("[LDS INFO]: angle-distance : [%f, %f, %i]\n", degree, scan->ranges[i], i);
-      if (scan->ranges[i] > 2) 
-	  {
-						distances.push_back(1);
-//                        printf("angle-distance : [%f, %d]\n",distances[i], a );
-                        a++;
-	  }                                  
-      else 
-	  {
-						distances.push_back(0);
-  //                      printf("angle-distance_n : [%f, %d]\n",distances[i], b );
-                        b++;
-      }
+		real_distances.push_back(scan->ranges[i]);
+	}
+      min = min_distance(real_distances);
    
     }
     return (find_optimal_degree(distances));
@@ -149,26 +134,38 @@ float find_optimal_degree(const std::vector<float> distances)
    return (optimal);
 }
 
+
+float min_distance(const std::vector<float> real_distances)
+{
+	float min = *min_element(real_distances.begin(), real_distances.end());
+	return min;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "seven");
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe<sensor_msgs::LaserScan>("/scan", 1000, scanCallback);
 	ros::Publisher angle_pub = n.advertise<std_msgs::Float64>("rotate_angle", 1000);
+	ros::Publisher min_pub = n.advertise<std_msgs::Float64>("minimum_distance", 1000);
 	ros::Rate loop_rate(1);
 	while (ros::ok())
 	{
 		std_msgs::Float64 msg;
+		std_msgs::Float64 mini;
 
         float g_o;
         g_o = g_optimal;
 		//std::stringstream ss;
 		//ss << g_optimal  ;
 		msg.data = g_o;
+		mini.data = min;
 
 		ROS_INFO("%f", msg.data);
+		ROS_INFO("%f", mini.data);
 
 		angle_pub.publish(msg);
+		min_pub.publish(mini);
 
 		ros::spinOnce();
 

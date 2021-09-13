@@ -8,8 +8,14 @@ from single_motor import *
 
 # 메인 함수(프로그램 실행)
 if __name__ == "__main__":
-       motor = single_motor()
-       motor.motor_move(-40,-40)
+       #motor = single_motor()
+       #motor.motor_move(-40,-40)
        #motor.motor_move_only_degree(-70)
-       time.sleep(5)
+       #time.sleep(5)
+       control = ControlMode2()
+
+       while True:
+           control.set_destination()
+
+    del control
 

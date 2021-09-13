@@ -3,7 +3,6 @@ import board                                                    #서보모터 �
 import busio                                                    #위와같이 서보모터 드라이버 패키지에 종속된 패키지입니다
 import time                                                     #모터 제어시 delay를 주기 위해 time패키지를 불러옵니다
 
-
 class single_motor:
     # 초기화
     def __init__(self):
@@ -59,4 +58,3 @@ class single_motor:
         self.servo_kit.servo[0].angle = 90
         self.servo_kit.servo[1].angle = 90
         del self.servo_kit
-

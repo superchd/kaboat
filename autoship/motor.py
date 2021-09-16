@@ -1,7 +1,7 @@
-from adafruit_servokit import ServoKit                          #서보모터 드라이버를 사용하기 위해 패키지를 불러옵니다
-import board                                                    #서보모터 드라이버 패키지에 종속된 패키지입니다
-import busio                                                    #위와같이 서보모터 드라이버 패키지에 종속된 패키지입니다
-import time                                                     #모터 제어시 delay를 주기 위해 time패키지를 불러옵니다
+from adafruit_servokit import ServoKit
+import board 
+import busio
+import time
 
 
 class Motor:
@@ -9,50 +9,61 @@ class Motor:
     def __init__(self):
         print("Motor init")
 
-        # i2c 통신을 젯슨 나노의 27,28번 핀으로 시작합니다
+        # i2c 통신을 젯슨 나노의 27,28번 핀으로 정의합니다
         i2c_bus0 = (busio.I2C(board.SCL_1, board.SDA_1))
 
-        # servo_kit 에 서보모터 드라이버를 연결합니다
-        self.servo_kit = ServoKit(channels=16, i2c=i2c_bus0)
+        # servo_kit 객체를 생성하고 거기에 서보모터 드라이버를 연결합니다
+        """
+        +추가설명
+        보통 부품같은 것들을 사용하기위해 코드를 짤 때는
+        제일 먼저 내가 사용할 부품에 대한 객체를 만들어줍니다.
+        즉 내가 부품을 2개 사용한다면 2개를 만들고, 5개를 사용하면 5개 각각에 해당하는 객체를 만듭니다.
+        그리고 이번 선박 프로젝트에서는 1개의 i2c 드라이버 모듈을 사용하므로 1개의 객체만 만들어도 됩니다.
 
-        # 0번째 모터(서보모터)에 90도 각도를 주어, 서보모터가 다른 위치를 향하고 있을 때, 정면으로 향하게 합니다
-        # 서보 모터의 경우 0~180의 범위를 가지며 0으로 갈수록 좌측, 180으로 갈수록 우측
+        channel 관련해서 질문도 있었습니다.
+        channel은 단순히 이 모듈에 서보모터를 몇개까지 연결하고
+        각각 따로 제어할 수 있는가를 나타내는 것이라고 보시면 됩니다.
+        즉 16개의 서보모터를 동시에 제어할 수 있는 모듈이니 채널은 16을 사용하시면 됩니다
+        """
+        self.servo_kit = ServoKit(channels=16, i2c=i2c_bus0)
+        
+        """클래스 이름을 servo_kit으로 수정하였고 밑의 클래스는 지웠습니다!"""
+
+
+        """
+        +추가설명
+        위에서는 이 i2c 드라이버 모듈 설정에 관한 코드였다면
+        이제 여기서 각각의 모터 제어에 관해서 코드가 나옵니다
+        self.servo_kit 이라는 i2c 드라이버 객체의 servo 라는 객체를 활용하는데
+        여기서 servo[번호]가 바로 모터의 핀번호입니다(0부터 시작)
+        즉 첫번째 핀과 두번째 핀에 BLDC 모터를 2개 연결했다면
+        그냥 self.servo_kit.servo[0] 과 self.servo_kit.servo[1]을 사용하시면 됩니다
+        """
+
+        """클래스 이름이 수정되었고 밑의 클래스는 삭제하였습니다!"""    
         self.servo_kit.servo[0].angle = 90
-        # 1번째 모터(ESC에 연결된 BLDC 모터)에 90 신호를 주어 ESC 신호를 보정합니다(2초정도 필요함)
-        # BLDC 모터의 경우 0~180의 범위를 가지며 0으로 갈수록 빠르게 전진, 180으로 갈수록 빠르게 후진
-        # 하지만 40~140정도의 범위에서 움직이는 것을 추천한다
         self.servo_kit.servo[1].angle = 90
+
+
 
         # 2초정도 기다립니다
         time.sleep(2)
+        self.servo_kit.servo[0].set_pulse_width_range(1100, 1900)
+        self.servo_kit.servo[1].set_pulse_width_range(1100, 1900)
 
     # 모터 동작 함수
-    # degree : -90(좌측) ~ +90(우측)
-    # speed : -100(후진) ~ +100(전진)
-    def motor_move(self, left_speed: int, right_speed: int):
-        # 0번째 모터(서보모터)를 주어진 각도로 움직입니다
-        if -90 < left_speed < 90:
-            self.servo_kit.servo[0].angle = left_speed + 90
 
-        # 1번째 모터(BLDC 모터)를 90을 기준으로 주어진 속도로 움직입니다
-        if -100 < right_speed < 100:
-            self.servo_kit.servo[1].angle = right_speed + 90
-
+    """모터 동작 함수는 좌우측 BLDC 2개의 속도를 인자값으로 받기 때문에 함수를 간단화하였습니다"""
+    def motor_move(self, speedleft: int, speedright: int):
+        self.servo_kit.servo[0].angle = 90 - (speedleft * (90/100))
+        self.servo_kit.servo[0].angle = 90 - (speedright * (90/100))
         # 에러를 방지하기 위해 0.02초 지연합니다
         time.sleep(0.02)
-        """
-    # 각도만을 변경합니다
-    def motor_move_only_left(self, left_speed: int):
-        # 현재 속도를 받아옵니다
-        right_speed = (90 - self.servo_kit.servo[1].angle) * (100/90)
-        self.motor_move(left_speed, right_speed)
 
-    # 속도만을 변경합니다
-    def motor_move_only_right(self, right_speed: int):
-        # 현재 각도를 받아옵니다
-        left_speed = self.servo_kit.servo[0].angle - 90
-        self.motor_move(left_speed, right_speed)
-"""
+    
+
+
+    # 종료
     def __del__(self):
         print("Motor del")
         self.servo_kit.servo[0].angle = 90

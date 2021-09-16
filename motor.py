@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
 from adafruit_servokit import ServoKit                          #서보모터 드라이버를 사용하기 위해 패키지를 불러옵니다
 import board                                                    #서보모터 드라이버 패키지에 종속된 패키지입니다
 import busio                                                    #위와같이 서보모터 드라이버 패키지에 종속된 패키지입니다
@@ -35,12 +31,12 @@ class Motor:
     # speed : -100(후진) ~ +100(전진)
     def motor_move(self, degree: int, speed: int):
         # 0번째 모터(서보모터)를 주어진 각도로 움직입니다
-        if -90 < degree < 90:
-            self.servo_kit.servo[0].angle = degree + 90
+        #if  < degree < 90:
+        self.servo_kit.servo[0].angle = degree + 90
 
         # 1번째 모터(BLDC 모터)를 90을 기준으로 주어진 속도로 움직입니다
-        if -100 < speed < 100:
-            self.servo_kit.servo[1].angle = 90 - (speed * (90/100))
+        #if -100 < speed < 100:
+        self.servo_kit.servo[1].angle = 90 - (speed * (90/100))
 
         # 에러를 방지하기 위해 0.02초 지연합니다
         time.sleep(0.02)

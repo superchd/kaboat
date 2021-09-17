@@ -1,15 +1,27 @@
 from motor import *
-from socket import *
-from graphic import *
-from lidar import *
-from camera import *
+#from socket import *
+#from graphic import *
+#from lidar import *
+#from camera import *
 from imu import *
 import calculate as cal
-
+import math
+from gps import *
 
 # 실제 부표 크기(cm)
 REAL_BUOY_SIZE = 100
 
+def waypoint_step(self, waypoints, error_distance, tolerance):
+    if self.i + 1 != len(waypoints):
+        if error_distance > tolerance:
+            waypoint = waypoints[self.i]
+        elif error_distance <= tolerance:
+            waypoint = waypoints[self.i + 1]
+            self.i = self.i + 1
+    elif self.i + 1 == len(waypoints):
+        waypoint = waypoints[self.i]
+
+    return waypoint
 
 # mode1 : 사용자가 직접 조종
 class ControlMode1:
@@ -97,52 +109,40 @@ class ControlMode1:
         del self.sock
 
 
-# mode2 : autopilot 사용해서 자율 주행
+# mode2 : camera + lidar 사용해서 자율 주행
 class ControlMode2:
     # 초기화
     def __init__(self):
         print("ControlMode2 init")
-        self.GPS_x = 0.0
-        self.GPS_y = 0.0
-        self.psi = 0.0
-        self.i = 0 #for 'Waypoints List' Index
-        self.error_Distance = 30.0 # if error_distance = 0
-        self.DirectionAngle = 0.0
 
         # 모터 생성 및 기본값 설정
         self.motor = Motor()
         self.speed = 15
-        self.direction = 0
+        self.i = 0 #for 'Waypoints List' Index
+        self.error_Distance = 30.0 # if error_distance = 0
 
-        # IMU 생성 및 초기값(처음 각도) 저장
-        self.imu = Imu()
-        self.forward_direction = self.imu.imu_read()
+    def move_to_destination(self, waypoint):
+            del_lati, del_longi = location(waypoint)
+            print("I'm in move_to_destinaiton and find del_lati : ", del_lati, " and del_longi : ", del_longi)
+            tolerance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2)) 
 
-        # 라이다 생성
-        self.lidar = Lidar()
+            if (del_lati < 0) :
+                if (self.error_Distance > tolerance):
+                    print("I'm in move_to_destination, del_lati < 0, error_distance > tolerance")
+                    self.motor.motor_move(40,40)
+                else :
+                    if (del_longi > 1):
+                        print("I'm in move_to_destination, del_lati > 0, del_longi > 1")
+                        self.motor.motor_move(30,50)
+                    elif (del_longi <= 1):
+                        print("I'm in move_to_destination, del_lati > 0, del_longi <= 1")
+                        self.motor.motor_move(50,30)
+            
+            else :
+                print("stop motor")
+                self.motor.motor_move(0,0)
 
-    def waypoint_step(self, waypoints, error_Distance, tolerance):
-        if self.i + 1 != len(waypoints):
-            if error_Distance > tolerance:
-                waypoint = waypoints[self.i]
-            elif error_Distance <= tolerance:
-                waypoint = waypoints[self.i + 1]
-                self.i = self.i + 1
-        elif self.i + 1 == len(waypoints):
-            waypoint = waypoints[self.i]
-        return waypoint 
+            time.sleep(4)
 
-    # 목적지 설정
-    def set_destination(self):
-        
-
-        
-
-       
-    # 목적지 향해서 주행
-    def move_to_destination(self, destination):
-        pass
-
-    # 종료
-    def __del__(self):
-        pass
+    #def __del__(self):
+    #   pass

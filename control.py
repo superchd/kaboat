@@ -1,15 +1,27 @@
 from motor import *
-from socket import *
-from graphic import *
-from lidar import *
-from camera import *
+#from socket import *
+#from graphic import *
+#from lidar import *
+#from camera import *
 from imu import *
 import calculate as cal
-
+import math
+from gps import *
 
 # 실제 부표 크기(cm)
 REAL_BUOY_SIZE = 100
 
+def waypoint_step(self, waypoints, error_distance, tolerance):
+    if self.i + 1 != len(waypoints):
+        if error_distance > tolerance:
+            waypoint = waypoints[self.i]
+        elif error_distance <= tolerance:
+            waypoint = waypoints[self.i + 1]
+            self.i = self.i + 1
+    elif self.i + 1 == len(waypoints):
+        waypoint = waypoints[self.i]
+
+    return waypoint
 
 # mode1 : 사용자가 직접 조종
 class ControlMode1:
@@ -106,16 +118,36 @@ class ControlMode2:
         # 모터 생성 및 기본값 설정
         self.motor = Motor()
         self.speed = 15
-        # 라이다 생성
-        self.lidar = Lidar()
+        self.i = 0 #for 'Waypoints List' Index
+        self.error_Distance = 0.00001 # if error_distance = 0
 
-        # 목적지 설정
-        # 목적지 향해서 주행
-    def move_to_destination(self, destination):
-        del_lati, del_longi =
-        
-        pass
+    def move_to_destination(self, waypoint):
+            del_lati, del_longi = location(waypoint)
+            print("I'm in move_to_destinaiton and find del_lati : ", del_lati, " and del_longi : ", del_longi )
+            tolerance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2)) 
 
-    # 종료
-    def __del__(self):
-        pass
+            if (del_lati < 0) :
+                if (self.error_Distance > tolerance):
+                    print("Go straight")
+                    self.motor.motor_move(40,-35)
+                else :
+                    if (del_longi >= 0.0000009):
+                        print("Left")
+                        self.motor.motor_move(10,-23)
+                    elif (del_longi < -0.000009):
+                        print("Right")
+                        self.motor.motor_move(13,-13)
+                    else :
+                        print("Go straight2")
+                        self.motor.motor_move(35,-45)
+
+                        
+            
+            else :
+                print("stop motor")
+                self.motor.motor_move(0,0)
+
+            time.sleep(2)
+
+    #def __del__(self):
+    #   pass

@@ -7,7 +7,6 @@ import calcpoint
 import math
 from functools import reduce
 
-
 ser = serial.Serial(port = "/dev/ttyACM0", baudrate = 38400, timeout = 0.1)    
 
 def GPSparser(data):
@@ -33,50 +32,44 @@ def checksum(sentence):
 	else:
 		return False 
 
-def location(waypoint):
+def location(waypoint, revised):
 
-        way_latitude = waypoint[0]
-        way_longitude = waypoint[1]
-        rotate_way_latitude = math.cos(-0.6060006599)*way_latitude - math.sin(-0.6060006599)*way_longitude
-        rotate_way_longitude = math.sin(-0.6060006599)*way_latitude + math.cos(-0.6060006599)*way_longitude
-        while True:
-            data = ser.readline()
-            result = collections.defaultdict()
-            res = GPSparser(data) 
-            print("I'm in GPS, ready to return del_lati, del_longi")
-            if res == None:
-                print("none")
-                # print("I'm in Gps, and in res == None")
-            else :
-                   # res = str(res)
-                print(res)
-                lat = str (res[2])
-                lon = str (res[4])
-            # result['altitude'] = float(res[9])
-                    
-                if (res == "checksum error"):
-                        print("")
-            # print(result)
+    rotate_way_latitude = waypoint[0]
+    rotate_way_longitude = waypoint[1]
+    rotate = atan2(revised[0], revised[1])
+    rotate = rotate * 180 / math.pi
+    print("rotate_angle: ", rotate)
+
+    while True:
+        data = ser.readline()
+        result = collections.defaultdict()
+        res = GPSparser(data)
+        print("I'm in GPS, ready to return del_lati, del_longi")
+        if res == None:
+            print("none")
+        else:
+            print(res)
+            lat = str (res[2])
+            lon = str (res[4])
+            if (res == "checksum error"):
+                print("")
                 print(lat)
+            else:
                 lat_h = float(lat[2:4])
                 lon_h = float(lon[2:5])
                 lat_m = float(lat[4:12])
                 lon_m = float(lon[5:13])
                 print('lat_h: %f lon_h: %f lat_m: %f lon_m: %f' %(lat_h, lon_h, lat_m, lon_m))
-
                 latitude = lat_h + (lat_m/60)
                 longitude = lon_h + (lon_m/60)
-                
                 print('latitude: %f longitude: %f' %(latitude,longitude))
-                rotate_latitude = math.cos(-0.6060006599)*latitude - math.sin(-0.6060006599)*longitude
-                rotate_longitude = math.sin(-0.6060006599)*latitude + math.cos(-0.6060006599)*longitude
-                
+                rotate_latitude = math.cos(-rotate)*latitude - math.sin(-rotate)*longitude
+                rotate_longitude = math.sin(-rotate)*latitude + math.cos(-rotate)*longitude
                 print('rotate_latitude: %f rotate_longitude: %f' %(rotate_latitude, rotate_longitude))
-                del_lati = rotate_latitude - rotate_way_latitude    
+                del_lati = rotate_latitude - rotate_way_latitude
                 del_longi = rotate_longitude - rotate_way_longitude
                 break
-
-        return (del_lati, del_longi)
+    return (del_lati, del_longi)
             #except:
             #    return (1 , 1)
             #    pass

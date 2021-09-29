@@ -121,27 +121,26 @@ class ControlMode2:
         self.i = 0 #for 'Waypoints List' Index
         self.error_Distance = 0.00001 # if error_distance = 0
 
-    def move_to_destination(self, waypoint):
-            del_lati, del_longi = location(waypoint)
+    def move_to_destination(self, waypoint, revised):
+            del_lati, del_longi = location(waypoint, revised)
+            del_longi = del_longi * 100000
             print("I'm in move_to_destinaiton and find del_lati : ", del_lati, " and del_longi : ", del_longi )
             tolerance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2)) 
 
             if (del_lati < 0) :
                 if (self.error_Distance > tolerance):
                     print("Go straight")
-                    self.motor.motor_move(40,-35)
+                    self.motor.motor_move(-14,-14)
                 else :
-                    if (del_longi >= 0.0000009):
+                    if (del_longi >= 1):
                         print("Left")
-                        self.motor.motor_move(10,-23)
-                    elif (del_longi < -0.000009):
+                        self.motor.motor_move(-20, -23)
+                    elif (del_longi < -1):
                         print("Right")
-                        self.motor.motor_move(13,-13)
+                        self.motor.motor_move(-23,-20)
                     else :
                         print("Go straight2")
-                        self.motor.motor_move(35,-45)
-
-                        
+                        self.motor.motor_move(-14,-14)
             
             else :
                 print("stop motor")

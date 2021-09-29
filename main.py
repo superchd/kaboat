@@ -13,9 +13,14 @@ from gps import *
 # 메인 함수(프로그램 실행)
 if __name__ == "__main__":
     # 모드 입력
-    mode = int(input("어떤 모드를 실행할까요?(1: 직접 조종, 2: 카메라+라이다)\n"))
+    #mode = int(input("어떤 모드를 실행할까요?(1: 직접 조종, 2: 카메라+라이다)\n"))
+    print("write coordinate, write start point and end point")
+    n,m=map(int, input().split())
+    revised=[0 for _ in range(n)]
 
-
+    for i in range(n):
+        revised[i]=list(map(float, input().split()))
+    mode = 2
     # mode1(직접 주행일 때)
     if mode == 1:
         # 클래스 불러오기
@@ -37,12 +42,10 @@ if __name__ == "__main__":
         waypoints=[0 for _ in range(n)]
         for i in range(n):
             waypoints[i]=list(map(float, input().split()))
-
         waypoint = waypoints[0]
         print("I will tell you waypoints")
         print(*waypoints, sep = '\n')
         print("\n")
-
         #del_lati, del_longi = location(waypoint)
         #print("I'm in main.py and receive del_lati : ", del_lati, " and del_longi : ", del_longi)
         #error_distance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2)) < 1
@@ -52,9 +55,8 @@ if __name__ == "__main__":
         # 주행 시작
         while True:
             print("I'm in main.py , and start loop")
-
-            control.move_to_destination(waypoint)
-            x_diff, y_diff = location(waypoint)
+            control.move_to_destination(waypoint, revised)
+            x_diff, y_diff = location(waypoint, revised)
             error_distance = math.pow(10, 5) * math.sqrt(math.pow(x_diff , 2) + math.pow(y_diff,2)) 
             
             if x_diff != 0 and y_diff != 0:

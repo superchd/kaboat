@@ -120,33 +120,80 @@ class ControlMode2:
         self.speed = 15
         self.i = 0 #for 'Waypoints List' Index
         self.error_Distance = 0.00001 # if error_distance = 0
+        self.imu = Imu()
 
-    def move_to_destination(self, waypoint, revised):
-            del_lati, del_longi = location(waypoint, revised)
+    def move_to_destination(self, waypoint):
+            del_lati, del_longi = location(waypoint)
             del_longi = del_longi * 100000
             print("I'm in move_to_destinaiton and find del_lati : ", del_lati, " and del_longi : ", del_longi )
-            tolerance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2)) 
-
-            if (del_lati < 0) :
-                if (self.error_Distance > tolerance):
+            tolerance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2))
+           #time.sleep(3)
+            self.forward_direction = self.imu.imu_read()
+            print("my heading angle is : ", self.forward_direction)
+            if ( self.forward_direction <= 160) or (320 <self.forward_direction <=360) :
+                if (0):
                     print("Go straight")
                     self.motor.motor_move(-14,-14)
+                    time.sleep(2)
                 else :
-                    if (del_longi >= 1):
+                    if (del_longi >= 0.3):
                         print("Left")
-                        self.motor.motor_move(-20, -23)
-                    elif (del_longi < -1):
+                        self.motor.motor_move(-17, -20)
+                        time.sleep(2)
+                    elif (del_longi < -0.3):
                         print("Right")
-                        self.motor.motor_move(-23,-20)
+                        self.motor.motor_move(-20,-17)
+                        time.sleep(2)
                     else :
                         print("Go straight2")
-                        self.motor.motor_move(-14,-14)
-            
-            else :
-                print("stop motor")
+                        self.motor.motor_move(-12, -12)
+            elif (160 < self. forward_direction < 240):
+                print("too left ,go right")
+                self.motor.motor_move(-20,0)
+                time.sleep(1)
+            elif (240 <= self.forward_direction <= 320):
+                print("too right, go left")
+                self.motor.motor_move(0,-20)
+                time.sleep(1)
+            else:
                 self.motor.motor_move(0,0)
+                print("stop")
 
-            time.sleep(2)
+    def move_to_home(self, waypoint):
+        del_lati, del_longi = location(waypoint)
+        del_longi = del_longi * 100000
+        print("I'm in move_to_destinaiton and find del_lati : ", del_lati, " and del_longi : ", del_longi )
+        tolerance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2))
+        self.forward_direction = self.imu.imu_read()
+        print("my heading angle is : ", self.forward_direction)
+        if (210 <= self.forward_direction <= 300 ):
+            if (0):
+                print("Go straight")
+                self.motor.motor_move(-14,-14)
+                time.sleep(2)
+            else :
+                if (del_longi >= 0.3):
+                    print("Left")
+                    self.motor.motor_move(-17, -20)
+                    time.sleep(2)
+                elif (del_longi < -0.3):
+                    print("Right")
+                    self.motor.motor_move(-20,-17)
+                    time.sleep(2)
+                else :
+                    print("Go straight2")
+                    self.motor.motor_move(-12, -12)
+        elif (160 < self. forward_direction < 210):
+            print("too left ,go right")
+            self.motor.motor_move(-20,0)
+            time.sleep(1.5)
+        elif (300 <= self.forward_direction <= 360) or (0 <= self.forward_direction <= 160):
+            print("too right, go left")
+            self.motor.motor_move(0,-20)
+            time.sleep(1.5)
+        else:
+            self.motor.motor_move(0,-30)
+            print("stop")
 
     #def __del__(self):
     #   pass

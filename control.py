@@ -130,33 +130,33 @@ class ControlMode2:
            #time.sleep(3)
             self.forward_direction = self.imu.imu_read()
             print("my heading angle is : ", self.forward_direction)
-            if ( self.forward_direction <= 160) or (320 <self.forward_direction <=360) :
+            if ( 0 <=self.forward_direction <= 170)or(320 <= self.forward_direction <= 360)  :
                 if (0):
                     print("Go straight")
-                    self.motor.motor_move(-14,-14)
+                    self.motor.motor_move(0, 30)
                     time.sleep(2)
                 else :
                     if (del_longi >= 0.3):
                         print("Left")
-                        self.motor.motor_move(-17, -20)
+                        self.motor.motor_move(-30, 13)
                         time.sleep(2)
                     elif (del_longi < -0.3):
                         print("Right")
-                        self.motor.motor_move(-20,-17)
+                        self.motor.motor_move(+30,13)
                         time.sleep(2)
                     else :
                         print("Go straight2")
-                        self.motor.motor_move(-12, -12)
-            elif (160 < self. forward_direction < 240):
+                        self.motor.motor_move(0, 10)
+            elif (170 < self. forward_direction < 227):
                 print("too left ,go right")
-                self.motor.motor_move(-20,0)
+                self.motor.motor_move(40,13)
                 time.sleep(1)
-            elif (240 <= self.forward_direction <= 320):
+            elif (227 <= self.forward_direction < 320) :
                 print("too right, go left")
-                self.motor.motor_move(0,-20)
+                self.motor.motor_move(-40,13)
                 time.sleep(1)
             else:
-                self.motor.motor_move(0,0)
+                self.motor.motor_move(0,-11)
                 print("stop")
 
     def move_to_home(self, waypoint):
@@ -166,33 +166,33 @@ class ControlMode2:
         tolerance = math.sqrt(math.pow(del_lati , 2) + math.pow(del_longi,2))
         self.forward_direction = self.imu.imu_read()
         print("my heading angle is : ", self.forward_direction)
-        if (210 <= self.forward_direction <= 300 ):
+        if (0 <= self.forward_direction <= 150 ) :
             if (0):
                 print("Go straight")
-                self.motor.motor_move(-14,-14)
+                self.motor.motor_move(-16,-16)
                 time.sleep(2)
             else :
                 if (del_longi >= 0.3):
                     print("Left")
-                    self.motor.motor_move(-17, -20)
+                    self.motor.motor_move(-20, -23)
                     time.sleep(2)
                 elif (del_longi < -0.3):
                     print("Right")
-                    self.motor.motor_move(-20,-17)
+                    self.motor.motor_move(-23,-20)
                     time.sleep(2)
                 else :
                     print("Go straight2")
                     self.motor.motor_move(-12, -12)
-        elif (160 < self. forward_direction < 210):
+        elif (170 < self. forward_direction < 290):
             print("too left ,go right")
             self.motor.motor_move(-20,0)
             time.sleep(1.5)
-        elif (300 <= self.forward_direction <= 360) or (0 <= self.forward_direction <= 160):
+        elif (290 <= self.forward_direction <= 360) or ( 0<= self.forward_direction <=10) :
             print("too right, go left")
             self.motor.motor_move(0,-20)
             time.sleep(1.5)
         else:
-            self.motor.motor_move(0,-30)
+            self.motor.motor_move(0,-10)
             print("stop")
 
     #def __del__(self):

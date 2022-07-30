@@ -6,3 +6,7 @@
 * lidar : 우리가 만든 알고리즘이 포함되어 있다. 여기서 ros master에 쏘는 토픽이 바로 **선회각**이다. 다만, 정확한 선회각 값은 kaboat2021에 있는 라이다 코드가 찾아 줄 것이다.  
 * motor : 기본적으로 모터를 실행할때, 사용해야하는 모듈들이 저장되어 있다. 
 * haemir : 아두이노로 모터를 제어할 때 사용했던 코드인데, 아두이노와 ros가 잘 호환되지 않아, 토픽을 publish 하고 subscribe하는데 에러가 많았던 코드들이다. 
+
+
+## 다음은 대회영상 링크이다. 
+https://drive.google.com/file/d/1APN4OoAvPmsEuWzBJlyPKRn7SXUSrTGf/view?usp=sharing
